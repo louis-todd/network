@@ -117,7 +117,10 @@ class ICMPPing(NetworkApplication):
             print(sequence)
             break
         # 2. Once received, record time of receipt, otherwise, handle a timeout
-
+        if(packetID == ID):
+            print("id is the same")
+        else:
+            print("its fucked lmao")
         # 3. Compare the time of receipt to time of sending, producing the total network delay
         # 4. Unpack the packet header for useful information, including the ID
         # 5. Check that the ID matches between the request and reply
@@ -142,14 +145,16 @@ class ICMPPing(NetworkApplication):
     def doOnePing(self, destinationAddress, timeout):
         # 1. Create ICMP socket
         icmpSocket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
-        ID = random.random() * 65535
+        ID = int(random.random() * 65535)
         # 2. Call sendOnePing function
-        timesent = self.sendOnePing(icmpSocket, destinationAddress, 1)
+        timesent = self.sendOnePing(icmpSocket, destinationAddress, ID)
         # 3. Call receiveOnePing function
-        timerecieved = self.receiveOnePing(icmpSocket, destinationAddress, 1, args.timeout)
+        timerecieved = self.receiveOnePing(icmpSocket, destinationAddress, ID, args.timeout)
         # 4. Close ICMP socket
         icmpSocket.close()
         # 5. Return total network delay
+        print(timesent)
+        print(timerecieved)
         return timerecieved - timesent
 
     def __init__(self, args):
@@ -162,10 +167,10 @@ class ICMPPing(NetworkApplication):
         for x in range(args.count):
         # 2. Call doOnePing function, approxim
         # ately every second
-            totalNetworkDelay = self.doOnePin=g(destinationAddress, args.timeout)
+            totalNetworkDelay = self.doOnePing(destinationAddress, args.timeout)
             time.sleep(1)
         # 3. Print out the returned delay (and other relevant details) using the printOneResult method
-            self.printOneResult(destinationAddress, 234, totalNetworkDelay, 150) # Example use of printOneResult - complete as appropriate
+            self.printOneResult(destinationAddress, 234, totalNetworkDelay*1000, 150) # Example use of printOneResult - complete as appropriate
         # 4. Continue this process until stopped
 
 
@@ -178,22 +183,32 @@ class Traceroute(NetworkApplication):
 
 class WebServer(NetworkApplication):
 
-    def handleRequest(tcpSocket):
+    def handleRequest(self, tcpSocket):
+        print("we here")
         # 1. Receive request message from the client on connection socket
+        request = tcpSocket.recv(1024)
+        print(request)
         # 2. Extract the path of the requested object from the message (second part of the HTTP header)
         # 3. Read the corresponding file from disk
         # 4. Store in temporary buffer
         # 5. Send the correct HTTP response error
         # 6. Send the content of the file to the socket
         # 7. Close the connection socket
-        pass
 
     def __init__(self, args):
         print('Web Server starting on port: %i...' % (args.port))
         # 1. Create server socket
+        serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # 2. Bind the server socket to server address and server port
+        serversocket.bind(('127.0.0.1', args.port))
         # 3. Continuously listen for connections to server socket
+        serversocket.listen(5)
         # 4. When a connection is accepted, call handleRequest function, passing new connection socket (see https://docs.python.org/3/library/socket.html#socket.socket.accept)
+        while True:
+            (clientsocket, address) = serversocket.accept()
+            print(clientsocket)
+            print(address)
+            self.handleRequest(clientsocket)
         # 5. Close server socket
 
 
